@@ -23,7 +23,7 @@ Non-goals:
 
 Scope:
 
-- Client PWA built on `vault-sdk`.
+- Client companion web app built on `vault-sdk`.
 - Client-held master keys: generation, import, and device-local storage.
 - Zero-data personalization queries to brands: the client's device answers brand queries from the vault, and the brand receives the answer, never the record.
 

@@ -11,7 +11,7 @@ project adheres to [Semantic Versioning](https://semver.org/).
 - Advisor copilot API: client records, interaction history, memory-informed
   drafting, approval gate on every outbound communication, WhatsApp Business
   webhook (inbound recording only, no automatic responses).
-- Advisor workspace web app (installable PWA) with the approval workflow as
+- Advisor web workspace (installable on desktop and mobile) with the approval workflow as
   the primary interaction.
 - `@luxe/vault-sdk`: client-held envelope encryption for vault records
   (AES-GCM, per-record data keys, AAD binding).

@@ -6,7 +6,7 @@ Numbers correspond to the request lifecycle in the next section.
 
 ```mermaid
 graph LR
-    WEB["Browser PWA<br/>(apps/copilot-web)"] -- "(3) draft request / (6) approve" --> API["copilot-api<br/>(Cloud Run)"]
+    WEB["Web workspace<br/>(apps/copilot-web)"] -- "(3) draft request / (6) approve" --> API["copilot-api<br/>(Cloud Run)"]
     MCP["mcp-server"] -- "advisor tools" --> API
     WA["WhatsApp Business API"] -- "(1) inbound webhook" --> API
     API -- "(2)(5)(7) store interaction / draft / outcome" --> FS[("Firestore<br/>(brand tenant)")]

@@ -34,7 +34,7 @@ Luxury advisors usually piece together guest preferences, scattered WhatsApp thr
 
 ```mermaid
 graph LR
-    WEB["Browser PWA<br/>(apps/copilot-web)"] -->|HTTPS| API["copilot-api<br/>(Cloud Run)"]
+    WEB["Web workspace<br/>(apps/copilot-web)"] -->|HTTPS| API["copilot-api<br/>(Cloud Run)"]
     MCP["mcp-server"] -->|advisor tools| API
     WA["WhatsApp Business API"] -->|inbound webhook| API
     API --> FS[("Firestore<br/>(brand tenant)")]
@@ -91,7 +91,7 @@ The demo seeds a fictional hotel and dining client base, "Maison Verre". All dem
 
 | Path | Purpose |
 | --- | --- |
-| `apps/copilot-web` | Advisor workspace (browser PWA) |
+| `apps/copilot-web` | Advisor web workspace |
 | `packages/copilot-api` | Advisor API: client memory, drafting, request ledger, approval gate, WhatsApp webhook |
 | `packages/model-gateway` | `ModelProvider` abstraction: Gemini API key, Vertex AI, deterministic mock |
 | `packages/vault-sdk` | Client-held envelope encryption for vault records |
