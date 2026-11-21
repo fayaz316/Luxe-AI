@@ -1,6 +1,6 @@
 # Deployment
 
-Deploy lux into your own Google Cloud project. Each deployment is a single-brand tenant: Firestore, Cloud Run, Firebase Hosting, Secret Manager, and least-privilege IAM, provisioned per brand. There is no multi-tenant option.
+Deploy luxe into your own Google Cloud project. Each deployment is a single-brand tenant: Firestore, Cloud Run, Firebase Hosting, Secret Manager, and least-privilege IAM, provisioned per brand. There is no multi-tenant option.
 
 ## Prerequisites
 
@@ -28,7 +28,7 @@ Store provider credentials in Secret Manager as described in [../infra/terraform
 From the repository root:
 
 ```bash
-docker build -f packages/copilot-api/Dockerfile -t REGION-docker.pkg.dev/YOUR_PROJECT/lux/copilot-api:latest .
+docker build -f packages/copilot-api/Dockerfile -t REGION-docker.pkg.dev/YOUR_PROJECT/luxe/copilot-api:latest .
 ```
 
 Deploy the image to Cloud Run (`gcloud run deploy`, or the Cloud Run module in `infra/terraform`). Set the runtime environment: `FIRESTORE_PROJECT`, `WHATSAPP_VERIFY_TOKEN`, and the provider variables from step 2.

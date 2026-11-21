@@ -1,8 +1,8 @@
-# @lux/copilot-api
+# @luxe/copilot-api
 
-Advisor-facing backend for the lux platform (Cloud Run target). It stores
+Advisor-facing backend for the luxe platform (Cloud Run target). It stores
 brand-side client records and interaction history, drafts client
-communications with an LLM through `@lux/model-gateway`, and enforces the
+communications with an LLM through `@luxe/model-gateway`, and enforces the
 platform's approval-first policy: **no message is ever final without explicit
 advisor approval**.
 
@@ -23,7 +23,7 @@ advisor approval**.
 ```bash
 cp packages/copilot-api/.env.example packages/copilot-api/.env
 pnpm install
-pnpm --filter @lux/copilot-api dev        # http://localhost:8080
+pnpm --filter @luxe/copilot-api dev        # http://localhost:8080
 ```
 
 ### Environment variables
@@ -35,7 +35,7 @@ pnpm --filter @lux/copilot-api dev        # http://localhost:8080
 | `GOOGLE_PROJECT` / `GOOGLE_PROJECT_ID` | –       | Google Cloud project; enables the Vertex AI provider                      |
 | `GOOGLE_APPLICATION_CREDENTIALS` | –            | Optional service-account key file for Vertex                              |
 | `FIRESTORE_PROJECT`           | –                | When set, uses Firestore instead of the in-memory store                   |
-| `WHATSAPP_VERIFY_TOKEN`       | `lux-dev-verify` | Expected `hub.verify_token` for Meta webhook verification                 |
+| `WHATSAPP_VERIFY_TOKEN`       | `luxe-dev-verify` | Expected `hub.verify_token` for Meta webhook verification                 |
 | `SEED_DEMO`                   | `0`              | Set to `1` to seed the fictional "Maison Verre" demo client base on boot   |
 
 With no model credentials set, the deterministic mock provider is used, so
@@ -69,7 +69,7 @@ keeps local development and the demo dependency-free. When `FIRESTORE_PROJECT`
 is set, the server constructs `FirestoreStore` against collections `clients`,
 `interactions`, and `drafts`. `@google-cloud/firestore` is intentionally **not**
 a package dependency: it is dynamically imported only inside the Firestore
-branch, so brands install it themselves (`pnpm --filter @lux/copilot-api add
+branch, so brands install it themselves (`pnpm --filter @luxe/copilot-api add
 @google-cloud/firestore`) or use the bundled deployment image. The store uses
 plain get/set with client-side filtering; composite queries and indexes can be
 added when access patterns demand them. `FirestoreStore` also accepts any
@@ -78,8 +78,8 @@ pre-built Firestore instance, which keeps tests hermetic.
 ## Docker
 
 ```bash
-docker build -f packages/copilot-api/Dockerfile -t lux-copilot-api .
-docker run --rm -p 8080:8080 --env-file packages/copilot-api/.env lux-copilot-api
+docker build -f packages/copilot-api/Dockerfile -t luxe-copilot-api .
+docker run --rm -p 8080:8080 --env-file packages/copilot-api/.env luxe-copilot-api
 ```
 
 Single multi-stage image: build with pnpm over the workspace, then run
@@ -88,9 +88,9 @@ Single multi-stage image: build with pnpm over the workspace, then run
 ## Development
 
 ```bash
-pnpm --filter @lux/copilot-api build
-pnpm --filter @lux/copilot-api typecheck
-pnpm --filter @lux/copilot-api test      # fastify app.inject, no network
+pnpm --filter @luxe/copilot-api build
+pnpm --filter @luxe/copilot-api typecheck
+pnpm --filter @luxe/copilot-api test      # fastify app.inject, no network
 ```
 
 Logging hygiene: request logging uses the default serializers (method, URL,

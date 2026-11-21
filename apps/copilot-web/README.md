@@ -1,6 +1,6 @@
-# Lux Copilot (web)
+# Luxe Copilot (web)
 
-`@lux/copilot-web` is the advisor workspace of **Lux**, an open-source
+`@luxe/copilot-web` is the advisor workspace of **Luxe**, an open-source
 client-intelligence platform for the luxury industry. It is an installable
 progressive web app where a client advisor can:
 
@@ -22,19 +22,19 @@ actions. Nothing is dispatched by the application on its own.
 
 ## Development
 
-This app lives in the Lux pnpm workspace. From the repository root:
+This app lives in the Luxe pnpm workspace. From the repository root:
 
 ```sh
 pnpm install
-pnpm --filter @lux/copilot-web dev        # start Vite dev server on port 5173
-pnpm --filter @lux/copilot-web typecheck  # tsc --noEmit
-pnpm --filter @lux/copilot-web build      # typecheck + vite build
-pnpm --filter @lux/copilot-web preview    # preview the production build
+pnpm --filter @luxe/copilot-web dev        # start Vite dev server on port 5173
+pnpm --filter @luxe/copilot-web typecheck  # tsc --noEmit
+pnpm --filter @luxe/copilot-web build      # typecheck + vite build
+pnpm --filter @luxe/copilot-web preview    # preview the production build
 ```
 
 ## Environment
 
-Copy `.env.example` to `.env.local` and point the app at a Lux API instance:
+Copy `.env.example` to `.env.local` and point the app at a Luxe API instance:
 
 ```
 VITE_API_URL=http://localhost:8080
@@ -54,7 +54,7 @@ The client expects the following REST surface:
 
 ## Progressive web app
 
-Lux Copilot ships a web app manifest and a small service worker, so it can be
+Luxe Copilot ships a web app manifest and a small service worker, so it can be
 installed to a device home screen or desktop and run standalone. Offline, the
 service worker serves cached assets and the app shell with a network-first
 strategy; API calls (`/api`) and cross-origin requests are never cached.

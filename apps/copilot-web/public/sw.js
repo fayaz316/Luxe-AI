@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
-// Service worker for Lux Copilot: precaches the app shell and serves
+// Service worker for Luxe Copilot: precaches the app shell and serves
 // same-origin GET requests network-first with a cache fallback.
-const CACHE = 'lux-copilot-v0.1';
+const CACHE = 'luxe-copilot-v0.1';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

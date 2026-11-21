@@ -1,7 +1,7 @@
 {
-  "name": "@lux/model-gateway",
+  "name": "@luxe/model-gateway",
   "version": "0.1.0",
-  "description": "Provider-agnostic completion gateway for lux: one interface over Gemini API-key, Vertex AI, and scripted mock providers.",
+  "description": "Provider-agnostic completion gateway for luxe: one interface over Gemini API-key, Vertex AI, and scripted mock providers.",
   "license": "Apache-2.0",
   "type": "module",
   "engines": {

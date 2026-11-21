@@ -52,7 +52,7 @@ async function waitForApi(attempts = 60, delayMs = 500) {
 
 addExitHooks();
 
-start(`pnpm --filter @lux/copilot-api exec tsx src/index.ts`, {
+start(`pnpm --filter @luxe/copilot-api exec tsx src/index.ts`, {
   SEED_DEMO: "1",
   PORT: API_PORT,
 });
@@ -63,12 +63,12 @@ if (!apiReady) {
   process.exit(1);
 }
 
-start(`pnpm --filter @lux/copilot-web dev`, {
+start(`pnpm --filter @luxe/copilot-web dev`, {
   VITE_API_URL: API_URL,
 });
 
 console.log("");
-console.log("  lux demo");
+console.log("  Luxe demo");
 console.log("  ------------------------------------------");
 console.log(`  Copilot API   ${API_URL}`);
 console.log("  Web app       http://localhost:5173");

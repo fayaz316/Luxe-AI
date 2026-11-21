@@ -10,5 +10,5 @@ output "project_id" {
 
 output "artifact_registry_url" {
   description = "Docker repository for the copilot API image."
-  value       = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.lux.repository_id}"
+  value       = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.luxe.repository_id}"
 }

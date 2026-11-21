@@ -1,6 +1,6 @@
-# @lux/model-gateway
+# @luxe/model-gateway
 
-Provider-agnostic completion gateway for the lux platform. Consumers code against a single
+Provider-agnostic completion gateway for the luxe platform. Consumers code against a single
 `ModelProvider` interface while this package maps requests onto the concrete vendor protocol,
 keeping prompt assembly and provider selection out of application code.
 
@@ -22,7 +22,7 @@ and `temperature`/`maxTokens` map to `generationConfig`.
 ## Usage
 
 ```ts
-import { resolveProvider } from '@lux/model-gateway';
+import { resolveProvider } from '@luxe/model-gateway';
 
 const provider = resolveProvider(process.env);
 const result = await provider.complete({
@@ -43,9 +43,9 @@ console.log(result.text, result.providerId);
 ## Development
 
 ```bash
-pnpm --filter @lux/model-gateway build
-pnpm --filter @lux/model-gateway typecheck
-pnpm --filter @lux/model-gateway test
+pnpm --filter @luxe/model-gateway build
+pnpm --filter @luxe/model-gateway typecheck
+pnpm --filter @luxe/model-gateway test
 ```
 
 Network calls are never made in tests: providers take an injectable `fetchImpl` (or auth

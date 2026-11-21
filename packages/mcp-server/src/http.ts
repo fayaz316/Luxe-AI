@@ -8,14 +8,20 @@ export interface ApiCallOptions {
   method?: "GET" | "POST";
   body?: unknown;
   fetchImpl: FetchImpl;
+  /** Optional shared secret forwarded as x-api-key (COPILOT_API_KEY on the server). */
+  apiKey?: string;
 }
 
 export async function apiCall(options: ApiCallOptions): Promise<unknown> {
-  const { baseUrl, path, method = "GET", body, fetchImpl } = options;
+  const { baseUrl, path, method = "GET", body, fetchImpl, apiKey } = options;
+
+  const headers: Record<string, string> = {};
+  if (body !== undefined) headers["content-type"] = "application/json";
+  if (apiKey !== undefined && apiKey !== "") headers["x-api-key"] = apiKey;
 
   const response = await fetchImpl(`${baseUrl}${path}`, {
     method,
-    headers: body === undefined ? undefined : { "content-type": "application/json" },
+    headers: Object.keys(headers).length > 0 ? headers : undefined,
     body: body === undefined ? undefined : JSON.stringify(body),
   });
 

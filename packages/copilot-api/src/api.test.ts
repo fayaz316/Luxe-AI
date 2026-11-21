@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-import { MockProvider } from '@lux/model-gateway';
+import { MockProvider } from '@luxe/model-gateway';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { FastifyInstance } from 'fastify';
 import { MemoryStore } from './store.js';
@@ -201,7 +201,7 @@ describe('copilot-api', () => {
   it('echoes the WhatsApp verification challenge', async () => {
     const ok = await app.inject({
       method: 'GET',
-      url: '/webhook/whatsapp?hub.mode=subscribe&hub.verify_token=lux-dev-verify&hub.challenge=challenge-42',
+      url: '/webhook/whatsapp?hub.mode=subscribe&hub.verify_token=luxe-dev-verify&hub.challenge=challenge-42',
     });
     expect(ok.statusCode).toBe(200);
     expect(ok.body).toBe('challenge-42');
@@ -278,5 +278,63 @@ describe('copilot-api', () => {
     expect(statuses.statusCode).toBe(200);
     const after = await app.inject({ method: 'GET', url: `/clients/${client.id}` });
     expect(((after.json() as { interactions: Interaction[] }).interactions)).toHaveLength(1);
+  });
+});
+
+describe('copilot-api with an API key', () => {
+  const KEY = 'test-shared-secret';
+  let app: FastifyInstance;
+
+  beforeAll(() => {
+    app = buildServer({
+      store: new MemoryStore(),
+      provider: new MockProvider('DRAFT: key-auth test reply'),
+      apiKey: KEY,
+    });
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it('rejects requests without a key with 401', async () => {
+    const res = await app.inject({ method: 'GET', url: '/clients' });
+    expect(res.statusCode).toBe(401);
+    expect(res.json()).toEqual({ error: 'unauthorized' });
+  });
+
+  it('rejects a wrong key with 401', async () => {
+    const res = await app.inject({ method: 'GET', url: '/clients', headers: { 'x-api-key': 'wrong' } });
+    expect(res.statusCode).toBe(401);
+  });
+
+  it('accepts the correct key', async () => {
+    const res = await app.inject({ method: 'GET', url: '/clients', headers: { 'x-api-key': KEY } });
+    expect(res.statusCode).toBe(200);
+  });
+
+  it('keeps the health check reachable without a key', async () => {
+    const res = await app.inject({ method: 'GET', url: '/health' });
+    expect(res.statusCode).toBe(200);
+  });
+
+  it('keeps the WhatsApp webhook exempt: verification and inbound', async () => {
+    const verify = await app.inject({
+      method: 'GET',
+      url: '/webhook/whatsapp?hub.mode=subscribe&hub.verify_token=luxe-dev-verify&hub.challenge=c1',
+    });
+    expect(verify.statusCode).toBe(200);
+
+    const inbound = await app.inject({
+      method: 'POST',
+      url: '/webhook/whatsapp',
+      payload: { entry: [{ changes: [{ value: { messages: [] } }] }] },
+    });
+    expect(inbound.statusCode).toBe(200);
+  });
+
+  it('enforces the key on the approval endpoints', async () => {
+    const unauthenticated = await app.inject({ method: 'POST', url: '/drafts/any/approve', payload: {} });
+    expect(unauthenticated.statusCode).toBe(401);
   });
 });

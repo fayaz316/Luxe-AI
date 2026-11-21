@@ -542,7 +542,7 @@ export default function App(): ReactNode {
   return (
     <div className="app">
       <header className="topbar">
-        <span className="wordmark">Lux Copilot</span>
+        <span className="wordmark">Luxe Copilot</span>
         <span className="approval-pill">
           <span className="approval-pill-dot" aria-hidden="true" />
           Human approval required for every send

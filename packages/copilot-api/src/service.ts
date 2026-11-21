@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
 import cors from '@fastify/cors';
-import type { ModelProvider } from '@lux/model-gateway';
+import type { ModelProvider } from '@luxe/model-gateway';
 import Fastify, { type FastifyInstance } from 'fastify';
 import type { Store } from './store.js';
 import type { Client, Draft, Interaction, InteractionChannel } from './types.js';
@@ -12,7 +12,24 @@ export const SERVICE_VERSION = '0.1.0';
 export interface BuildServerOptions {
   store: Store;
   provider: ModelProvider;
+  /**
+   * Optional shared secret. When set, every request must carry it in the
+   * `x-api-key` header, except the health check and the WhatsApp webhook
+   * (which Meta calls without application headers and authenticates via its
+   * own verification mechanism).
+   */
+  apiKey?: string;
 }
+
+/** Constant-time comparison of digests so the key length never leaks. */
+function apiKeyMatches(presented: string | undefined, expected: string): boolean {
+  if (typeof presented !== 'string' || presented.length === 0) return false;
+  const presentedDigest = createHash('sha256').update(presented).digest();
+  const expectedDigest = createHash('sha256').update(expected).digest();
+  return timingSafeEqual(presentedDigest, expectedDigest);
+}
+
+const API_KEY_EXEMPT_PREFIXES = ['/health', '/webhook/whatsapp'];
 
 /**
  * System prompt for drafted client communications. Establishes the restrained
@@ -37,7 +54,7 @@ const INTERACTION_WINDOW = 8;
 /** Maximum length stored for interaction summaries. */
 const SUMMARY_MAX_LENGTH = 280;
 
-const DEFAULT_WHATSAPP_VERIFY_TOKEN = 'lux-dev-verify';
+const DEFAULT_WHATSAPP_VERIFY_TOKEN = 'luxe-dev-verify';
 
 interface WhatsAppWebhookPayload {
   entry?: readonly WhatsAppWebhookEntry[];
@@ -152,11 +169,31 @@ export function buildServer(options: BuildServerOptions): FastifyInstance {
     logger: {
       level: 'info',
       redact: {
-        paths: ['req.headers.authorization', 'req.headers.cookie'],
+        paths: ['req.headers.authorization', 'req.headers.cookie', 'req.headers["x-api-key"]'],
         censor: '[redacted]',
       },
     },
   });
+
+  if (options.apiKey !== undefined && options.apiKey !== '') {
+    const expectedKey = options.apiKey;
+    app.addHook('onRequest', async (request, reply) => {
+      // CORS preflights carry no application headers; the actual request
+      // that follows is still authenticated below.
+      if (request.method === 'OPTIONS') {
+        return;
+      }
+      const path = request.url.split('?')[0] ?? request.url;
+      if (API_KEY_EXEMPT_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`))) {
+        return;
+      }
+      const presented = request.headers['x-api-key'];
+      const presentedValue = Array.isArray(presented) ? presented[0] : presented;
+      if (!apiKeyMatches(presentedValue, expectedKey)) {
+        return reply.code(401).send({ error: 'unauthorized' });
+      }
+    });
+  }
 
   void app.register(cors, { origin: true });
 

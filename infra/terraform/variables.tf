@@ -18,11 +18,11 @@ variable "firestore_location" {
 variable "service_name" {
   description = "Cloud Run service name."
   type        = string
-  default     = "lux-copilot"
+  default     = "luxe-copilot"
 }
 
 variable "image" {
-  description = "Container image for the copilot API (e.g. REGION-docker.pkg.dev/PROJECT/REPO/lux-copilot-api:latest)."
+  description = "Container image for the copilot API (e.g. REGION-docker.pkg.dev/PROJECT/REPO/luxe-copilot-api:latest)."
   type        = string
 }
 
@@ -37,7 +37,14 @@ variable "whatsapp_verify_token" {
   description = "Verification token for the WhatsApp webhook handshake."
   type        = string
   sensitive   = true
-  default     = "lux-dev-verify"
+  default     = "luxe-dev-verify"
+}
+
+variable "copilot_api_key" {
+  description = "Optional shared secret required by the copilot API in the x-api-key header. Leave empty to disable key enforcement (rely on Cloud Run invoker IAM alone)."
+  type        = string
+  sensitive   = true
+  default     = ""
 }
 
 variable "allow_unauthenticated" {

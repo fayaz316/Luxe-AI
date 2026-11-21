@@ -1,14 +1,14 @@
 {
-  "name": "@lux/mcp-server",
+  "name": "@luxe/mcp-server",
   "version": "0.1.0",
-  "description": "MCP server exposing lux copilot advisor tools over the copilot API.",
+  "description": "MCP server exposing luxe copilot advisor tools over the copilot API.",
   "license": "Apache-2.0",
   "type": "module",
   "engines": {
     "node": ">=20"
   },
   "bin": {
-    "lux-mcp": "dist/index.js"
+    "luxe-mcp": "dist/index.js"
   },
   "main": "dist/index.js",
   "scripts": {

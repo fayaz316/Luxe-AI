@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * Typed client for the Lux API. All wrappers surface server-provided error
+ * Typed client for the Luxe API. All wrappers surface server-provided error
  * messages and never assume a response shape beyond the declared types.
  */
 
 export const API_BASE: string = import.meta.env.VITE_API_URL ?? 'http://localhost:8080';
+
+/** Optional shared secret for the copilot API (COPILOT_API_KEY on the server). */
+const API_KEY: string | undefined = import.meta.env.VITE_API_KEY;
 
 export type Channel = 'whatsapp' | 'email' | 'phone';
 
@@ -83,6 +86,9 @@ async function readErrorMessage(response: Response): Promise<string> {
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
   headers.set('Accept', 'application/json');
+  if (API_KEY !== undefined && API_KEY !== '' && headers.get('x-api-key') === null) {
+    headers.set('x-api-key', API_KEY);
+  }
   if (init.body !== undefined && headers.get('Content-Type') === null) {
     headers.set('Content-Type', 'application/json');
   }
@@ -92,7 +98,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     response = await fetch(`${API_BASE}${path}`, { ...init, headers });
   } catch (cause: unknown) {
     const reason = cause instanceof Error ? cause.message : 'unknown cause';
-    throw new Error(`Unable to reach the Lux API (${reason}).`);
+    throw new Error(`Unable to reach the Luxe API (${reason}).`);
   }
 
   if (!response.ok) {
@@ -104,7 +110,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   try {
     return JSON.parse(raw) as T;
   } catch {
-    throw new Error('The Lux API returned an invalid response.');
+    throw new Error('The Luxe API returned an invalid response.');
   }
 }
 
@@ -121,7 +127,7 @@ export function createClient(input: NewClientInput): Promise<Client> {
 }
 
 export function draftReply(input: { clientId: string; channel: Channel; intentHint?: string }): Promise<Draft> {
-  return request<Draft>('/drafts', { method: 'POST', body: JSON.stringify(input) });
+  return request<Draft>('/draft', { method: 'POST', body: JSON.stringify(input) });
 }
 
 export function approveDraft(id: string, text?: string): Promise<Draft> {

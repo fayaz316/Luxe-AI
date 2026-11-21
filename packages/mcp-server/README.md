@@ -1,6 +1,6 @@
-# @lux/mcp-server
+# @luxe/mcp-server
 
-MCP server exposing the lux copilot advisor tools over the copilot API.
+MCP server exposing the luxe copilot advisor tools over the copilot API.
 Intended for MCP-compatible clients used by brand teams; every tool routes
 through the copilot API, so the approval-first policy applies unchanged —
 `approve_draft` is the human approval gate.
@@ -10,6 +10,7 @@ through the copilot API, so the approval-first policy applies unchanged —
 | Environment variable | Default | Purpose |
 | --- | --- | --- |
 | `COPILOT_API_URL` | `http://localhost:8080` | Base URL of the brand's copilot API deployment |
+| `COPILOT_API_KEY` | unset | Shared secret; forwarded as `x-api-key` when the API requires one |
 
 ## Tools
 
@@ -26,7 +27,7 @@ through the copilot API, so the approval-first policy applies unchanged —
 ```json
 {
   "mcpServers": {
-    "lux-copilot": {
+    "luxe-copilot": {
       "command": "node",
       "args": ["/path/to/packages/mcp-server/dist/index.js"],
       "env": {
@@ -40,8 +41,8 @@ through the copilot API, so the approval-first policy applies unchanged —
 ## Development
 
 ```bash
-pnpm --filter @lux/mcp-server build
-pnpm --filter @lux/mcp-server test
+pnpm --filter @luxe/mcp-server build
+pnpm --filter @luxe/mcp-server test
 ```
 
 Licensed under Apache-2.0.

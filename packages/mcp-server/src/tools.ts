@@ -6,6 +6,8 @@ import { apiCall, type FetchImpl } from "./http.js";
 export interface CopilotToolsOptions {
   apiUrl: string;
   fetchImpl?: FetchImpl;
+  /** Optional shared secret forwarded as x-api-key on every call. */
+  apiKey?: string;
 }
 
 export interface ToolDef {
@@ -37,6 +39,7 @@ interface DraftSummary {
 export function copilotTools(options: CopilotToolsOptions): ToolDef[] {
   const { apiUrl } = options;
   const fetchImpl = options.fetchImpl ?? fetch;
+  const apiKey = options.apiKey;
 
   return [
     {
@@ -44,7 +47,7 @@ export function copilotTools(options: CopilotToolsOptions): ToolDef[] {
       description: "List clients known to this brand tenant, with a summary for each.",
       shape: {},
       run: async () => {
-        const clients = (await apiCall({ baseUrl: apiUrl, path: "/clients", fetchImpl })) as ClientSummary[];
+        const clients = (await apiCall({ baseUrl: apiUrl, path: "/clients", fetchImpl, apiKey })) as ClientSummary[];
         return clients;
       },
     },
@@ -54,7 +57,7 @@ export function copilotTools(options: CopilotToolsOptions): ToolDef[] {
       shape: { id: z.string().describe("Client id") },
       run: async (args) => {
         const id = String(args.id);
-        return apiCall({ baseUrl: apiUrl, path: `/clients/${id}`, fetchImpl });
+        return apiCall({ baseUrl: apiUrl, path: `/clients/${id}`, fetchImpl, apiKey });
       },
     },
     {
@@ -72,6 +75,7 @@ export function copilotTools(options: CopilotToolsOptions): ToolDef[] {
           path: "/draft",
           method: "POST",
           fetchImpl,
+          apiKey,
           body: {
             clientId: String(args.clientId),
             channel: String(args.channel),
@@ -95,6 +99,7 @@ export function copilotTools(options: CopilotToolsOptions): ToolDef[] {
           path: `/drafts/${draftId}/approve`,
           method: "POST",
           fetchImpl,
+          apiKey,
           body: args.text === undefined ? {} : { text: String(args.text) },
         }) as Promise<DraftSummary>;
       },
@@ -110,6 +115,7 @@ export function copilotTools(options: CopilotToolsOptions): ToolDef[] {
           path: `/drafts/${draftId}/reject`,
           method: "POST",
           fetchImpl,
+          apiKey,
           body: {},
         }) as Promise<DraftSummary>;
       },

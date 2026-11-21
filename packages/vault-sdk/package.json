@@ -1,7 +1,7 @@
 {
-  "name": "@lux/vault-sdk",
+  "name": "@luxe/vault-sdk",
   "version": "0.1.0",
-  "description": "Cryptographic core of lux: client-owned, end-to-end encrypted Vault records stored by brands as opaque ciphertext.",
+  "description": "Cryptographic core of luxe: client-owned, end-to-end encrypted Vault records stored by brands as opaque ciphertext.",
   "license": "Apache-2.0",
   "type": "module",
   "engines": {

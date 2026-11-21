@@ -1,4 +1,4 @@
-# lux Charter
+# luxe Charter
 
 This charter states the commitments the project holds itself to. They bind the codebase, the infrastructure, the documentation, and every derivative deployment. A contribution that conflicts with a commitment is a defect, and a product direction that conflicts with a commitment is out of scope.
 

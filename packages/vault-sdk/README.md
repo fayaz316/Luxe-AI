@@ -1,6 +1,6 @@
-# @lux/vault-sdk
+# @luxe/vault-sdk
 
-Cryptographic core of the lux client-intelligence platform. The vault-sdk defines and protects the Vault: client-owned, end-to-end encrypted profile records covering identity, taste, collection, interactions, and consent. Brand systems store sealed Vault records as opaque ciphertext and can never read them.
+Cryptographic core of the luxe client-intelligence platform. The vault-sdk defines and protects the Vault: client-owned, end-to-end encrypted profile records covering identity, taste, collection, interactions, and consent. Brand systems store sealed Vault records as opaque ciphertext and can never read them.
 
 - Zero runtime dependencies — only the Web Crypto API (`globalThis.crypto`), available in Node.js 20+ and all modern browsers.
 - TypeScript-first, strict mode, ESM only.
@@ -9,7 +9,7 @@ Cryptographic core of the lux client-intelligence platform. The vault-sdk define
 
 The Vault is zero-knowledge for everyone except the client:
 
-- **Client-held master key.** A 256-bit AES-GCM key generated on the client device is the only key that can unlock the Vault. Neither lux nor any brand system ever receives it. Losing it means losing the data — that is the point.
+- **Client-held master key.** A 256-bit AES-GCM key generated on the client device is the only key that can unlock the Vault. Neither luxe nor any brand system ever receives it. Losing it means losing the data — that is the point.
 - **Per-record data keys (envelope encryption).** Every `sealRecord` call generates a fresh 256-bit AES-GCM data-encryption key (DEK) for that single record. The record is encrypted with the DEK, and the DEK is wrapped with the master key under its own nonce. Sealed records share no cryptographic material, so compromise of one envelope cannot cascade, and master-key rotation only requires re-wrapping DEKs.
 - **AAD binding.** The envelope id (a random UUID) and the record kind are authenticated as additional authenticated data over the record ciphertext. Re-labeling an envelope, swapping it for another, or replaying it under a different id or kind fails authentication and throws a `VaultError` with code `TAMPER`.
 - **Integrity failures are explicit.** Any modification of the ciphertext, wrapped key, envelope id, or kind — or use of the wrong master key — surfaces as `VaultError` code `TAMPER`; structurally invalid input surfaces as `VaultError` code `FORMAT`.
@@ -18,10 +18,10 @@ The full threat model, including trust boundaries and residual risks, lives in [
 
 ## Installation
 
-Inside the lux monorepo:
+Inside the luxe monorepo:
 
 ```sh
-pnpm add @lux/vault-sdk
+pnpm add @luxe/vault-sdk
 ```
 
 ## Usage
@@ -35,14 +35,14 @@ import {
   openRecord,
   type VaultRecord,
   type Envelope,
-} from '@lux/vault-sdk';
+} from '@luxe/vault-sdk';
 
 // 1. On the client device: create the master key and back it up in secure storage.
 const masterKey = await generateMasterKey();
 const backup = await exportMasterKey(masterKey);
 // `backup` is base64 of the raw key bytes. Hand it ONLY to the client's
 // secure storage (OS keychain, secure enclave, printed recovery phrase...).
-// It must never be sent to lux or to a brand.
+// It must never be sent to luxe or to a brand.
 const restored = await importMasterKey(backup);
 
 // 2. Seal a record; the result is an opaque Envelope the brand can store.

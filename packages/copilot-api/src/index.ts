@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-import { resolveProvider } from '@lux/model-gateway';
+import { resolveProvider } from '@luxe/model-gateway';
 import { pathToFileURL } from 'node:url';
 import { seedDemoData } from './seed.js';
 import { buildServer, SERVICE_NAME } from './service.js';
@@ -40,7 +40,11 @@ async function main(): Promise<void> {
   if (process.env.SEED_DEMO === '1') {
     await seedDemoData(store);
   }
-  const app = buildServer({ store, provider });
+  const app = buildServer({
+    store,
+    provider,
+    ...(process.env.COPILOT_API_KEY ? { apiKey: process.env.COPILOT_API_KEY } : {}),
+  });
   const port = Number(process.env.PORT ?? 8080);
   await app.listen({ port, host: '0.0.0.0' });
   app.log.info(`${SERVICE_NAME} listening on 0.0.0.0:${port}`);

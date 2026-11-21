@@ -203,7 +203,7 @@ importers:
       '@fastify/cors':
         specifier: ^9.0.0
         version: 9.0.1
-      '@lux/model-gateway':
+      '@luxe/model-gateway':
         specifier: workspace:*
         version: link:../model-gateway
       fastify:

@@ -17,7 +17,7 @@ resource "google_project_service" "enabled" {
   disable_on_destroy = false
 }
 
-resource "google_firestore_database" "lux" {
+resource "google_firestore_database" "luxe" {
   project     = var.project_id
   name        = "(default)"
   location_id = var.firestore_location
@@ -26,10 +26,10 @@ resource "google_firestore_database" "lux" {
   depends_on = [google_project_service.enabled["firestore.googleapis.com"]]
 }
 
-resource "google_artifact_registry_repository" "lux" {
+resource "google_artifact_registry_repository" "luxe" {
   project       = var.project_id
   location      = var.region
-  repository_id = "lux"
+  repository_id = "luxe"
   format        = "DOCKER"
 
   depends_on = [google_project_service.enabled["artifactregistry.googleapis.com"]]
@@ -37,7 +37,7 @@ resource "google_artifact_registry_repository" "lux" {
 
 resource "google_secret_manager_secret" "gemini_api_key" {
   project   = var.project_id
-  secret_id = "lux-gemini-api-key"
+  secret_id = "luxe-gemini-api-key"
 
   replication {
     auto {}
@@ -53,7 +53,7 @@ resource "google_secret_manager_secret_version" "gemini_api_key" {
 
 resource "google_secret_manager_secret" "whatsapp_verify_token" {
   project   = var.project_id
-  secret_id = "lux-whatsapp-verify-token"
+  secret_id = "luxe-whatsapp-verify-token"
 
   replication {
     auto {}
@@ -67,10 +67,26 @@ resource "google_secret_manager_secret_version" "whatsapp_verify_token" {
   secret_data = var.whatsapp_verify_token
 }
 
+resource "google_secret_manager_secret" "copilot_api_key" {
+  project   = var.project_id
+  secret_id = "luxe-copilot-api-key"
+
+  replication {
+    auto {}
+  }
+
+  depends_on = [google_project_service.enabled["secretmanager.googleapis.com"]]
+}
+
+resource "google_secret_manager_secret_version" "copilot_api_key" {
+  secret      = google_secret_manager_secret.copilot_api_key.id
+  secret_data = var.copilot_api_key
+}
+
 resource "google_service_account" "copilot_runtime" {
   project      = var.project_id
-  account_id   = "lux-copilot-runtime"
-  display_name = "lux copilot runtime"
+  account_id   = "luxe-copilot-runtime"
+  display_name = "luxe copilot runtime"
 }
 
 resource "google_project_iam_member" "runtime_roles" {
@@ -86,8 +102,8 @@ resource "google_project_iam_member" "runtime_roles" {
 }
 
 resource "google_cloud_run_v2_service" "copilot" {
-  name               = var.service_name
-  location           = var.region
+  name                = var.service_name
+  location            = var.region
   deletion_protection = false
 
   template {
@@ -121,7 +137,7 @@ resource "google_cloud_run_v2_service" "copilot" {
         name = "GEMINI_API_KEY"
         value_source {
           secret_key_ref {
-            secret = google_secret_manager_secret.gemini_api_key.secret_id
+            secret  = google_secret_manager_secret.gemini_api_key.secret_id
             version = "latest"
           }
         }
@@ -131,7 +147,17 @@ resource "google_cloud_run_v2_service" "copilot" {
         name = "WHATSAPP_VERIFY_TOKEN"
         value_source {
           secret_key_ref {
-            secret = google_secret_manager_secret.whatsapp_verify_token.secret_id
+            secret  = google_secret_manager_secret.whatsapp_verify_token.secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      env {
+        name = "COPILOT_API_KEY"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.copilot_api_key.secret_id
             version = "latest"
           }
         }

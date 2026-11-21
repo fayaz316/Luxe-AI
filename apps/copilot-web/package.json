@@ -1,8 +1,8 @@
 {
-  "name": "@lux/copilot-web",
+  "name": "@luxe/copilot-web",
   "version": "0.1.0",
   "private": true,
-  "description": "Advisor workspace for Lux: client memory, AI-drafted replies, and a mandatory human approval gate before any message is sent.",
+  "description": "Advisor workspace for Luxe: client memory, AI-drafted replies, and a mandatory human approval gate before any message is sent.",
   "license": "Apache-2.0",
   "type": "module",
   "engines": {

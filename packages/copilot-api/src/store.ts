@@ -101,7 +101,7 @@ interface FirestoreQuerySnapshotLike {
  * Production Store backed by Firestore, used when FIRESTORE_PROJECT is set.
  * Deliberately small: plain get/set against the `clients`, `interactions`,
  * and `drafts` collections, with client-side filtering instead of composite
- * queries. Documents are stored whole, keyed by the lux entity id.
+ * queries. Documents are stored whole, keyed by the luxe entity id.
  */
 export class FirestoreStore implements Store {
   private readonly firestore: FirestoreLike;

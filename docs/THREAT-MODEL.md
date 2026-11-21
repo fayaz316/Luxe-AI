@@ -1,6 +1,6 @@
 # Threat model
 
-This model covers lux 0.1. It is revised whenever a boundary, asset, or actor changes; residual risks are reviewed against [ROADMAP.md](../ROADMAP.md) each milestone.
+This model covers luxe 0.1. It is revised whenever a boundary, asset, or actor changes; residual risks are reviewed against [ROADMAP.md](../ROADMAP.md) each milestone.
 
 ## Assets
 

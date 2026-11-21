@@ -26,7 +26,7 @@ export interface CompletionResult {
 }
 
 /**
- * Common interface implemented by every lux model provider. Consumers depend
+ * Common interface implemented by every luxe model provider. Consumers depend
  * on this abstraction only, never on a concrete vendor client.
  */
 export interface ModelProvider {

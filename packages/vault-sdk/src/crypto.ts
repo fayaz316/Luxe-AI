@@ -212,7 +212,7 @@ export async function generateMasterKey(): Promise<VaultCryptoKey> {
  * The returned string grants full access to every envelope sealed under the
  * key. It must only be handled by the client device's secure storage (OS
  * keychain, secure enclave, or an equivalent user-controlled mechanism) and
- * must never be transmitted to lux or to any brand's systems.
+ * must never be transmitted to luxe or to any brand's systems.
  */
 export async function exportMasterKey(key: VaultCryptoKey): Promise<string> {
   const raw = await webcrypto().subtle.exportKey('raw', key);
