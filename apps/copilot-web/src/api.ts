@@ -58,6 +58,27 @@ export interface ClientDetail {
   interactions: Interaction[];
 }
 
+export type StepState = 'awaiting-your-hand' | 'confirmed';
+
+export interface RequestStep {
+  id: string;
+  partner: string;
+  action: string;
+  state: StepState;
+  draft?: string;
+  channel?: string;
+  confirmedAt?: string;
+}
+
+export interface ClientRequest {
+  id: string;
+  clientId: string;
+  title: string;
+  why: string;
+  steps: RequestStep[];
+  createdAt: string;
+}
+
 export interface NewClientInput {
   displayName: string;
   email?: string;
@@ -147,4 +168,15 @@ export function rejectDraft(id: string): Promise<Draft> {
 
 export function listDrafts(clientId: string): Promise<Draft[]> {
   return request<Draft[]>(`/drafts?clientId=${encodeURIComponent(clientId)}`);
+}
+
+export function listRequests(): Promise<ClientRequest[]> {
+  return request<ClientRequest[]>('/requests');
+}
+
+export function approveStep(requestId: string, stepId: string): Promise<ClientRequest> {
+  return request<ClientRequest>(
+    `/requests/${encodeURIComponent(requestId)}/steps/${encodeURIComponent(stepId)}/approve`,
+    { method: 'POST', body: JSON.stringify({}) },
+  );
 }

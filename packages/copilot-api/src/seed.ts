@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 // Fictional demonstration data. One line per memory; the story is in the
 // pattern, not the prose.
+import { randomUUID } from 'node:crypto';
 import type { Store } from './store.js';
-import type { Client, Interaction } from './types.js';
+import type { Client, ClientRequest, Interaction, RequestStep } from './types.js';
 
 function daysAgo(days: number, hourUtc = 12): string {
   const date = new Date();
@@ -99,6 +100,55 @@ export async function seedDemoData(store: Store): Promise<Client[]> {
 
   for (const interaction of interactions) {
     await store.addInteraction(interaction);
+  }
+
+  const step = (partner: string, action: string, extra: Partial<RequestStep> = {}): RequestStep => ({
+    id: randomUUID(),
+    partner,
+    action,
+    state: 'awaiting-your-hand',
+    ...extra,
+  });
+
+  const requests: ClientRequest[] = [
+    {
+      id: randomUUID(),
+      clientId: kenji.id,
+      title: 'A gift that knew',
+      why: 'His wife’s birthday is in ten days — she is the September bag, the watercolour remark.',
+      createdAt: daysAgo(3, 8),
+      steps: [
+        step('the boutique', 'Hold the September bag quietly — size and colour already known'),
+        step('the gallery', 'Arrange a private watercolour morning for two'),
+        step('the florist', 'Stand by with white peonies for the 12th'),
+      ],
+    },
+    {
+      id: randomUUID(),
+      clientId: sofia.id,
+      title: 'Regatta Saturday',
+      why: 'Same as last year — berth, crew dinner, cars. Fourteen calls last time.',
+      createdAt: daysAgo(9, 18),
+      steps: [
+        {
+          id: randomUUID(),
+          partner: 'the marina',
+          action: 'Reserve the members’ berth for Saturday',
+          state: 'confirmed',
+          confirmedAt: daysAgo(8, 10),
+        },
+        step('the kitchen', 'Crew dinner for eight — two vegetarian', {
+          channel: 'whatsapp',
+          draft: 'With pleasure — the terrace is yours Saturday, eight at the table, two vegetarian. One confirmation from me by morning.',
+        }),
+        step('transport', 'Two cars dockside at 08:30'),
+        step('the florist', 'Table flowers — white, no lilies'),
+      ],
+    },
+  ];
+
+  for (const request of requests) {
+    await store.saveRequest(request);
   }
 
   return [amara, kenji, sofia];

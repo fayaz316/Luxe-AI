@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 // Fictional demonstration scenarios. Every string is deliberately short:
 // the demo is meant to be felt in seconds, not read.
+import { randomUUID } from 'node:crypto';
 import { MockProvider, type MockScript } from '@luxe/model-gateway';
 import type { Store } from './store.js';
-import type { Draft } from './types.js';
+import type { ClientRequest, Draft, RequestStep } from './types.js';
 
 export interface BurstScenario {
   clientPhone: string;
@@ -58,14 +59,44 @@ export function buildDemoProvider(): MockProvider {
   return new MockProvider('DRAFT: With pleasure — I will confirm the details shortly.', demoMockScripts());
 }
 
+/** The cascade the burst opens: one delayed flight, four houses, one word from the guest. */
+export function cascadeRequest(clientId: string): ClientRequest {
+  const step = (partner: string, action: string, extra: Partial<RequestStep> = {}): RequestStep => ({
+    id: randomUUID(),
+    partner,
+    action,
+    state: 'awaiting-your-hand',
+    ...extra,
+  });
+  return {
+    id: randomUUID(),
+    clientId,
+    title: 'Paris, tonight',
+    why: 'Vol retardé — she lands at 00:10 instead of 21:20.',
+    createdAt: new Date().toISOString(),
+    steps: [
+      step('the house', 'Hold the corner suite past midnight — away from the street'),
+      step('the house', 'Move the table to 22:30, salon privé', {
+        channel: 'whatsapp',
+        draft:
+          'Avec plaisir — salon privé samedi, après le théâtre.\nMenu sans fruits de mer pour deux. Votre suite reste prête, quelle que soit l’heure.',
+      }),
+      step('transport', 'Re-time the car to the 00:25 arrival'),
+      step('the theatre', 'Re-note the will-call for the late curtain'),
+    ],
+  };
+}
+
 /**
- * Simulates the night desk: three inbound messages arrive together and a
- * draft is prepared for each, in the client's own language and tone, with
- * the reason attached. Nothing is sent — approval still gates every reply.
+ * Simulates the night desk: inbound messages arrive together, a draft is
+ * prepared for each in the client's own language, and the arrival cascade
+ * opens as a coordinated request. Nothing is sent — approval still gates
+ * every reply and every step.
  */
-export async function runDemoBurst(store: Store): Promise<Draft[]> {
+export async function runDemoBurst(store: Store): Promise<{ drafts: Draft[]; requests: ClientRequest[] }> {
   const clients = await store.listClients();
   const drafts: Draft[] = [];
+  const requests: ClientRequest[] = [];
 
   for (const scenario of BURST_SCENARIOS) {
     const client = clients.find(
@@ -83,7 +114,7 @@ export async function runDemoBurst(store: Store): Promise<Draft[]> {
 
     drafts.push(
       await store.saveDraft({
-        id: crypto.randomUUID(),
+        id: randomUUID(),
         clientId: client.id,
         channel: 'whatsapp',
         intentHint: scenario.reason,
@@ -92,7 +123,12 @@ export async function runDemoBurst(store: Store): Promise<Draft[]> {
         createdAt: new Date().toISOString(),
       }),
     );
+
+    // The delayed-flight scenario opens the four-house cascade.
+    if (scenario.match === '00:10') {
+      requests.push(await store.saveRequest(cascadeRequest(client.id)));
+    }
   }
 
-  return drafts;
+  return { drafts, requests };
 }

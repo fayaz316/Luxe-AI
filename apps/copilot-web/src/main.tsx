@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import '@fontsource-variable/fraunces';
-import '@fontsource-variable/instrument-sans';
+import '@fontsource/jost/400.css';
+import '@fontsource/jost/400-italic.css';
+import '@fontsource/jost/500.css';
+import '@fontsource/jost/600.css';
 import App from './App';
 import './styles.css';
 

@@ -55,3 +55,37 @@ export interface Draft {
   /** ISO 8601 timestamp; set when the advisor approves the draft. */
   approvedAt?: string;
 }
+
+/**
+ * A request step: one action, owned by the house or one partner, gated on
+ * the advisor's hand. Steps never act on their own.
+ */
+export interface RequestStep {
+  id: string;
+  /** Who executes: 'the house' or a named partner (boutique, gallery, transport…). */
+  partner: string;
+  /** One clear line describing the action. */
+  action: string;
+  state: 'awaiting-your-hand' | 'confirmed';
+  /** Optional guest-facing message recorded when the step is approved. */
+  draft?: string;
+  channel?: InteractionChannel;
+  /** ISO 8601 timestamp; set when the advisor confirms the step. */
+  confirmedAt?: string;
+}
+
+/**
+ * A coordinated request across the house and its partners — one guest need,
+ * decomposed into steps the advisor confirms one by one.
+ */
+export interface ClientRequest {
+  id: string;
+  clientId: string;
+  /** One-line title shown on the desk, e.g. "Paris, tonight". */
+  title: string;
+  /** One-line reason this is on the desk now. */
+  why: string;
+  steps: RequestStep[];
+  /** ISO 8601 timestamp. */
+  createdAt: string;
+}

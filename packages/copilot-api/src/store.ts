@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import { randomUUID } from 'node:crypto';
-import type { Client, Draft, Interaction } from './types.js';
+import type { Client, ClientRequest, Draft, Interaction } from './types.js';
 
 /** Persistence contract for copilot data; implemented by MemoryStore and FirestoreStore. */
 export interface Store {
@@ -13,6 +13,9 @@ export interface Store {
   saveDraft(draft: Draft): Promise<Draft>;
   getDraft(id: string): Promise<Draft | undefined>;
   updateDraft(draft: Draft): Promise<Draft>;
+  listRequests(clientId?: string): Promise<ClientRequest[]>;
+  getRequest(id: string): Promise<ClientRequest | undefined>;
+  saveRequest(request: ClientRequest): Promise<ClientRequest>;
 }
 
 /**
@@ -23,6 +26,7 @@ export class MemoryStore implements Store {
   private readonly clients = new Map<string, Client>();
   private readonly interactions = new Map<string, Interaction>();
   private readonly drafts = new Map<string, Draft>();
+  private readonly requests = new Map<string, ClientRequest>();
 
   async listClients(): Promise<Client[]> {
     return [...this.clients.values()];
@@ -68,6 +72,20 @@ export class MemoryStore implements Store {
     this.drafts.set(draft.id, draft);
     return draft;
   }
+
+  async listRequests(clientId?: string): Promise<ClientRequest[]> {
+    const all = [...this.requests.values()];
+    return clientId === undefined ? all : all.filter((request) => request.clientId === clientId);
+  }
+
+  async getRequest(id: string): Promise<ClientRequest | undefined> {
+    return this.requests.get(id);
+  }
+
+  async saveRequest(request: ClientRequest): Promise<ClientRequest> {
+    this.requests.set(request.id, request);
+    return request;
+  }
 }
 
 /**
@@ -110,7 +128,7 @@ export class FirestoreStore implements Store {
     this.firestore = firestoreInstance;
   }
 
-  private collection(name: 'clients' | 'interactions' | 'drafts'): FirestoreCollectionLike {
+  private collection(name: 'clients' | 'interactions' | 'drafts' | 'requests'): FirestoreCollectionLike {
     return this.firestore.collection(name);
   }
 
@@ -163,5 +181,21 @@ export class FirestoreStore implements Store {
   async updateDraft(draft: Draft): Promise<Draft> {
     await this.collection('drafts').doc(draft.id).set(draft);
     return draft;
+  }
+
+  async listRequests(clientId?: string): Promise<ClientRequest[]> {
+    const snapshot = await this.collection('requests').get();
+    const all = snapshot.docs.map((doc) => doc.data() as ClientRequest);
+    return clientId === undefined ? all : all.filter((request) => request.clientId === clientId);
+  }
+
+  async getRequest(id: string): Promise<ClientRequest | undefined> {
+    const snapshot = await this.collection('requests').doc(id).get();
+    return snapshot.exists ? (snapshot.data() as ClientRequest) : undefined;
+  }
+
+  async saveRequest(request: ClientRequest): Promise<ClientRequest> {
+    await this.collection('requests').doc(request.id).set(request);
+    return request;
   }
 }

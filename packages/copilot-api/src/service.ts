@@ -4,7 +4,7 @@ import cors from '@fastify/cors';
 import type { ModelProvider } from '@luxe/model-gateway';
 import Fastify, { type FastifyInstance } from 'fastify';
 import type { Store } from './store.js';
-import type { Client, Draft, Interaction, InteractionChannel } from './types.js';
+import type { Client, ClientRequest, Draft, Interaction, InteractionChannel } from './types.js';
 import { runDemoBurst } from './demo.js';
 
 export const SERVICE_NAME = 'copilot-api';
@@ -330,6 +330,45 @@ export function buildServer(options: BuildServerOptions): FastifyInstance {
     return store.updateDraft(rejected);
   });
 
+  app.get('/requests', async (request) => {
+    const query = request.query as { clientId?: string };
+    return store.listRequests(query.clientId);
+  });
+
+  app.post('/requests/:id/steps/:stepId/approve', async (request, reply) => {
+    const { id, stepId } = request.params as { id: string; stepId: string };
+    const clientRequest = await store.getRequest(id);
+    if (!clientRequest) {
+      return reply.code(404).send({ error: 'request not found' });
+    }
+    const step = clientRequest.steps.find((candidate) => candidate.id === stepId);
+    if (!step) {
+      return reply.code(404).send({ error: 'step not found' });
+    }
+    if (step.state !== 'awaiting-your-hand') {
+      return reply.code(409).send({ error: 'step is not awaiting your hand' });
+    }
+    const body = request.body as { text?: string } | undefined;
+    const confirmedAt = new Date().toISOString();
+    step.state = 'confirmed';
+    step.confirmedAt = confirmedAt;
+    await store.saveRequest(clientRequest);
+
+    // A step that speaks to the guest records the outbound communication
+    // at approval — same gate as drafted replies.
+    const message = typeof body?.text === 'string' && body.text.trim() !== '' ? body.text : step.draft;
+    if (message !== undefined) {
+      await store.addInteraction({
+        clientId: clientRequest.clientId,
+        at: confirmedAt,
+        channel: step.channel ?? 'whatsapp',
+        direction: 'outbound',
+        summary: truncate(message, SUMMARY_MAX_LENGTH),
+      });
+    }
+    return clientRequest;
+  });
+
   app.get('/webhook/whatsapp', async (request, reply) => {
     const query = request.query as Record<string, string | undefined>;
     const expectedToken = process.env.WHATSAPP_VERIFY_TOKEN ?? DEFAULT_WHATSAPP_VERIFY_TOKEN;
@@ -374,8 +413,8 @@ export function buildServer(options: BuildServerOptions): FastifyInstance {
 
   if (options.demoMode === true) {
     app.post('/dev/demo/burst', async () => {
-      const drafts = await runDemoBurst(store);
-      return { prepared: drafts.length, drafts };
+      const { drafts, requests } = await runDemoBurst(store);
+      return { prepared: drafts.length, drafts, requests };
     });
   }
 

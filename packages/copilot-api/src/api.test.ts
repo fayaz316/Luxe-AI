@@ -5,7 +5,7 @@ import type { FastifyInstance } from 'fastify';
 import { MemoryStore } from './store.js';
 import { seedDemoData } from './seed.js';
 import { buildServer } from './service.js';
-import type { Client, Draft, Interaction } from './types.js';
+import type { Client, ClientRequest, Draft, Interaction } from './types.js';
 
 const MOCK_REPLY = 'DRAFT: SCRIPTED — thank you for your note; we will confirm the table shortly.';
 
@@ -385,5 +385,83 @@ describe('copilot-api demo mode', () => {
     expect((approved.json() as Draft).status).toBe('approved');
 
     await app.close();
+  });
+});
+
+describe('copilot-api request ledger', () => {
+  let app: FastifyInstance;
+  let store: MemoryStore;
+
+  beforeAll(async () => {
+    store = new MemoryStore();
+    await seedDemoData(store);
+    app = buildServer({ store, provider: new MockProvider() });
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it('lists the seeded requests with mixed step states', async () => {
+    const res = await app.inject({ method: 'GET', url: '/requests' });
+    expect(res.statusCode).toBe(200);
+    const requests = res.json() as ClientRequest[];
+    expect(requests).toHaveLength(2);
+
+    const regatta = requests.find((request) => request.title === 'Regatta Saturday');
+    expect(regatta).toBeDefined();
+    expect(regatta?.steps.some((step) => step.state === 'confirmed')).toBe(true);
+    expect(regatta?.steps.some((step) => step.state === 'awaiting-your-hand')).toBe(true);
+  });
+
+  it('filters requests by client', async () => {
+    const all = (await app.inject({ method: 'GET', url: '/requests' })).json() as ClientRequest[];
+    const gift = all.find((request) => request.title === 'A gift that knew');
+    const res = await app.inject({ method: 'GET', url: `/requests?clientId=${gift?.clientId}` });
+    const filtered = res.json() as ClientRequest[];
+    expect(filtered).toHaveLength(1);
+    expect(filtered[0]?.title).toBe('A gift that knew');
+  });
+
+  it('confirms a step; a guest-facing step records the outbound communication', async () => {
+    const all = (await app.inject({ method: 'GET', url: '/requests' })).json() as ClientRequest[];
+    const regatta = all.find((request) => request.title === 'Regatta Saturday');
+    const kitchen = regatta?.steps.find((step) => step.partner === 'the kitchen');
+    expect(kitchen?.draft).toBeDefined();
+
+    const before = await app.inject({ method: 'GET', url: `/clients/${regatta?.clientId}` });
+    const beforeCount = ((before.json() as { interactions: Interaction[] }).interactions).length;
+
+    const res = await app.inject({
+      method: 'POST',
+      url: `/requests/${regatta?.id}/steps/${kitchen?.id}/approve`,
+      payload: {},
+    });
+    expect(res.statusCode).toBe(200);
+    const updated = res.json() as ClientRequest;
+    const updatedStep = updated.steps.find((step) => step.id === kitchen?.id);
+    expect(updatedStep?.state).toBe('confirmed');
+    expect(updatedStep?.confirmedAt).toBeTruthy();
+
+    const after = await app.inject({ method: 'GET', url: `/clients/${regatta?.clientId}` });
+    const interactions = (after.json() as { interactions: Interaction[] }).interactions;
+    expect(interactions.length).toBe(beforeCount + 1);
+    expect(interactions.at(-1)?.direction).toBe('outbound');
+    expect(interactions.at(-1)?.summary).toContain('the terrace is yours');
+  });
+
+  it('rejects double confirmation with 409 and unknown ids with 404', async () => {
+    const all = (await app.inject({ method: 'GET', url: '/requests' })).json() as ClientRequest[];
+    const regatta = all.find((request) => request.title === 'Regatta Saturday');
+    const confirmedStep = regatta?.steps.find((step) => step.state === 'confirmed');
+    const again = await app.inject({
+      method: 'POST',
+      url: `/requests/${regatta?.id}/steps/${confirmedStep?.id}/approve`,
+      payload: {},
+    });
+    expect(again.statusCode).toBe(409);
+
+    const unknownRequest = await app.inject({ method: 'POST', url: '/requests/none/steps/x/approve', payload: {} });
+    expect(unknownRequest.statusCode).toBe(404);
   });
 });

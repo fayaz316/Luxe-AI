@@ -9,14 +9,17 @@ import {
 } from 'react';
 import {
   approveDraft,
+  approveStep,
   draftReply,
   getClient,
   listClients,
   listDrafts,
+  listRequests,
   rejectDraft,
   type Channel,
   type Client,
   type ClientDetail,
+  type ClientRequest,
   type Draft,
   type Interaction,
 } from './api';
@@ -155,6 +158,8 @@ export default function App(): ReactNode {
   const [outcome, setOutcome] = useState<ComposerOutcome | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [pendingDrafts, setPendingDrafts] = useState<Draft[]>([]);
+  const [requests, setRequests] = useState<ClientRequest[]>([]);
+  const [confirmingStepId, setConfirmingStepId] = useState<string | null>(null);
 
   /**
    * Loads the roster and prefetches every client's detail so the sidebar can
@@ -180,6 +185,11 @@ export default function App(): ReactNode {
         if (entry !== null) cache[id] = entry;
       }
       setDetails(cache);
+      try {
+        setRequests(await listRequests());
+      } catch {
+        // The ledger is supplementary; guests and memory render regardless.
+      }
     } catch (cause: unknown) {
       setClientsError(cause instanceof Error ? cause.message : 'Unable to load guests.');
     } finally {
@@ -240,11 +250,45 @@ export default function App(): ReactNode {
   const timeline: Interaction[] =
     selectedDetail === undefined ? [] : [...selectedDetail.interactions].sort(byNewest);
 
+  const clientRequests: ClientRequest[] =
+    selectedId === null ? [] : requests.filter((request) => request.clientId === selectedId);
+
   const refreshAfterDecision = useCallback(async (clientId: string): Promise<void> => {
-    const [detail, drafts] = await Promise.all([getClient(clientId), listDrafts(clientId)]);
+    const [detail, drafts, allRequests] = await Promise.all([
+      getClient(clientId),
+      listDrafts(clientId),
+      listRequests().catch(() => [] as ClientRequest[]),
+    ]);
     setDetails((previous) => ({ ...previous, [clientId]: detail }));
     setPendingDrafts(drafts.filter((item) => item.status === 'pending_approval'));
+    setRequests(allRequests);
   }, []);
+
+  const confirmStep = useCallback(
+    async (requestId: string, stepId: string): Promise<void> => {
+      if (selectedId === null || confirmingStepId !== null) return;
+      setConfirmingStepId(stepId);
+      setActionError(null);
+      try {
+        await approveStep(requestId, stepId);
+        await refreshAfterDecision(selectedId);
+      } catch (cause: unknown) {
+        setActionError(cause instanceof Error ? cause.message : 'Confirmation failed.');
+      } finally {
+        setConfirmingStepId(null);
+      }
+    },
+    [selectedId, confirmingStepId, refreshAfterDecision],
+  );
+
+  const hasAwaitingSteps = useCallback(
+    (clientId: string): boolean =>
+      requests.some(
+        (request) =>
+          request.clientId === clientId && request.steps.some((step) => step.state === 'awaiting-your-hand'),
+      ),
+    [requests],
+  );
 
   const generateDraft = useCallback(async (): Promise<void> => {
     if (selectedId === null || generating || decision !== null) return;
@@ -384,6 +428,47 @@ export default function App(): ReactNode {
               </div>
             </div>
           </section>
+
+          {clientRequests.length > 0 && (
+            <>
+              <hr className="section-rule" />
+
+              <section aria-label="Request ledger">
+                <h2 className="panel-title">Ledger</h2>
+                {clientRequests.map((request) => (
+                  <div key={request.id} className="ledger-request">
+                    <div className="ledger-head">
+                      <h3 className="ledger-title">{request.title}</h3>
+                      <p className="ledger-why">{request.why}</p>
+                    </div>
+                    <ul className="step-list">
+                      {request.steps.map((step) => (
+                        <li key={step.id} className={`step-row step-${step.state}`}>
+                          <span className="step-dot" aria-hidden="true" />
+                          <span className="step-action">{step.action}</span>
+                          <span className="step-partner">{step.partner}</span>
+                          {step.state === 'awaiting-your-hand' ? (
+                            <button
+                              type="button"
+                              className="step-confirm"
+                              disabled={confirmingStepId !== null}
+                              onClick={() => {
+                                void confirmStep(request.id, step.id);
+                              }}
+                            >
+                              {confirmingStepId === step.id ? '…' : 'Confirm'}
+                            </button>
+                          ) : (
+                            <span className="step-done">Confirmed</span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </section>
+            </>
+          )}
 
           <hr className="section-rule" />
 
@@ -654,7 +739,10 @@ export default function App(): ReactNode {
                         {guestInitials(client.displayName)}
                       </span>
                       <span className="client-text">
-                        <span className="client-name">{client.displayName}</span>
+                        <span className="client-name">
+                          {client.displayName}
+                          {hasAwaitingSteps(client.id) && <span className="name-dot" aria-hidden="true" />}
+                        </span>
                         <span className="client-meta">
                           {last !== undefined ? (
                             <span className="client-snippet">{last.summary}</span>
