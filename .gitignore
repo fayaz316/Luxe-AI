@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.json.key
+google-application-credentials*.json
+
+# Test coverage
+coverage/
+
+# Terraform
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+
+# OS and editor artifacts
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/

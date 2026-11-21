@@ -1,0 +1,13 @@
+# The copilot API image is built from the repository root:
+#   docker build -f packages/copilot-api/Dockerfile -t lux-copilot-api .
+**/node_modules
+**/dist
+.git
+.github
+docs
+infra
+scripts
+apps
+coverage
+**/*.test.ts
+**/*.md
