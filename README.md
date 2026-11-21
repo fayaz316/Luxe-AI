@@ -2,8 +2,7 @@
 
 Open-source client intelligence and advisor enablement platform for the luxury industry.
 
-<!-- Replace YOUR-ORG/luxe with the repository slug. -->
-[![CI](https://github.com/YOUR-ORG/luxe/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/YOUR-ORG/luxe/actions/workflows/ci.yml)
+[![CI](https://github.com/fayaz316/Luxe-AI/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/fayaz316/Luxe-AI/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](#license)
 [![Node](https://img.shields.io/badge/node-%3E%3D20-green.svg)](#quickstart)
 
