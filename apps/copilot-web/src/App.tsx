@@ -31,9 +31,40 @@ type ComposerOutcome = { kind: 'approved'; channel: string } | { kind: 'rejected
 
 const dateFormatter = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' });
 
+const gutterFormatter = new Intl.DateTimeFormat(undefined, {
+  month: 'short',
+  day: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+});
+
+const monthYearFormatter = new Intl.DateTimeFormat(undefined, { month: 'short', year: 'numeric' });
+
 function formatDate(iso: string): string {
   const at = new Date(iso);
   return Number.isNaN(at.getTime()) ? iso : dateFormatter.format(at);
+}
+
+/** Compact ledger format for the timeline gutter: "Nov 21 · 22:05". */
+function formatGutter(iso: string): string {
+  const at = new Date(iso);
+  return Number.isNaN(at.getTime()) ? iso : gutterFormatter.format(at).replace(',', ' ·');
+}
+
+function formatMonthYear(iso: string): string {
+  const at = new Date(iso);
+  return Number.isNaN(at.getTime()) ? '' : monthYearFormatter.format(at);
+}
+
+/** Human language name for the meta line: "fr" -> "French". */
+function languageLabel(code: string): string {
+  try {
+    const display = new Intl.DisplayNames([], { type: 'language' });
+    return display.of(code) ?? code;
+  } catch {
+    return code;
+  }
 }
 
 function channelLabel(channel: string): string {
@@ -150,7 +181,7 @@ export default function App(): ReactNode {
       }
       setDetails(cache);
     } catch (cause: unknown) {
-      setClientsError(cause instanceof Error ? cause.message : 'Unable to load clients.');
+      setClientsError(cause instanceof Error ? cause.message : 'Unable to load guests.');
     } finally {
       setClientsLoading(false);
     }
@@ -301,7 +332,7 @@ export default function App(): ReactNode {
   } else if (selectedDetail === undefined) {
     detailNode = (
       <div className="detail-status">
-        <p>{detailLoading ? 'Loading client…' : 'Client unavailable.'}</p>
+        <p>{detailLoading ? 'Loading guest…' : 'Guest unavailable.'}</p>
       </div>
     );
   } else {
@@ -312,11 +343,11 @@ export default function App(): ReactNode {
         <div className="detail-scroll">
           <header className="client-header">
             <div>
-              <p className="client-kicker">Guest</p>
+              <p className="client-kicker">Guest since {formatMonthYear(client.createdAt)}</p>
               <h1 className="client-title">{client.displayName}</h1>
               <p className="meta-line">
                 {[
-                  client.language,
+                  languageLabel(client.language),
                   client.timezone,
                   client.email,
                   client.phone,
@@ -359,13 +390,13 @@ export default function App(): ReactNode {
           <section aria-label="Interaction timeline">
             <h2 className="panel-title">Correspondence</h2>
             {timeline.length === 0 ? (
-              <p className="quiet">No interactions recorded yet.</p>
+              <p className="quiet">No correspondence yet.</p>
             ) : (
               <ol className="timeline">
                 {timeline.map((item) => (
                   <li key={item.id} className={`timeline-item ${item.direction}`}>
-                    <time className="timeline-when" dateTime={item.at}>
-                      {formatDate(item.at)}
+                    <time className="timeline-when" dateTime={item.at} title={formatDate(item.at)}>
+                      {formatGutter(item.at)}
                     </time>
                     <span
                       className={item.direction === 'outbound' ? 'dir-dot dir-outbound' : 'dir-dot'}
@@ -451,6 +482,12 @@ export default function App(): ReactNode {
                 disabled={draft !== null || generating}
                 onChange={(event: ChangeEvent<HTMLInputElement>) => {
                   setIntent(event.target.value);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' && !generating && draft === null) {
+                    event.preventDefault();
+                    void generateDraft();
+                  }
                 }}
               />
             </label>
@@ -596,9 +633,9 @@ export default function App(): ReactNode {
             </div>
           )}
           {clientsLoading && clients.length === 0 ? (
-            <p className="sidebar-status">Loading clients…</p>
+            <p className="sidebar-status">Loading guests…</p>
           ) : visibleClients.length === 0 ? (
-            <p className="sidebar-status">No clients match.</p>
+            <p className="sidebar-status">No guests match.</p>
           ) : (
             <ul className="client-list">
               {visibleClients.map((client) => {

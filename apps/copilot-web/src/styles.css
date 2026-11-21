@@ -12,8 +12,8 @@
   --paper-deep: #f4f0e8;
   --ink: #201c18;
   --ink-soft: #4a443d;
-  --quiet: #8a8178;
-  --faint: #b3aaa0;
+  --quiet: #857c72;
+  --faint: #a09486;
   --hairline: #e7e1d6;
   --champagne: #a98858;
   --champagne-deep: #86663c;
@@ -420,11 +420,12 @@ button {
 }
 
 .timeline-when {
-  width: 96px;
+  width: 104px;
   flex-shrink: 0;
   padding-top: 3px;
   font-size: 11px;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
   color: var(--faint);
 }
 
