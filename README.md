@@ -19,6 +19,16 @@ Every luxury house holds a fragment of the client: the hotel holds the stay hist
 | Brands | Deployment in their own Google Cloud project, no data egress, choice of model provider |
 | Clients | An encrypted profile they own, no ad targeting |
 
+## The desk
+
+The advisor workspace (fictional demonstration data — see [docs/DEMO.md](docs/DEMO.md)):
+
+![The guest desk: memory, the request ledger with the Paris-tonight cascade, and correspondence](docs/screenshots/desk.png)
+
+A draft awaits the advisor's hand — editable, and nothing sends without explicit approval:
+
+![A prepared draft under the approval gate](docs/screenshots/approval.png)
+
 ## Architecture
 
 ```mermaid
