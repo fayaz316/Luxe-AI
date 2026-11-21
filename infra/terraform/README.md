@@ -1,6 +1,6 @@
 # Tenant Deployment (Terraform)
 
-Every luxe deployment runs inside the deploying brand's own Google Cloud
+Every Luxe deployment runs inside the deploying brand's own Google Cloud
 project. This module creates:
 
 - Firestore database (native mode, brand-selected location)
@@ -25,15 +25,15 @@ terraform apply \
   -var project_id=YOUR_PROJECT \
   -var region=europe-west4 \
   -var firestore_location=europe-west4 \
-  -var image=REGION-docker.pkg.dev/YOUR_PROJECT/luxe/luxe-copilot-api:latest
+  -var image=REGION-docker.pkg.dev/YOUR_PROJECT/Luxe/luxe-copilot-api:latest
 ```
 
 Build and push the image from the repository root first:
 
 ```bash
 docker build -f packages/copilot-api/Dockerfile \
-  -t REGION-docker.pkg.dev/YOUR_PROJECT/luxe/luxe-copilot-api:latest .
-docker push REGION-docker.pkg.dev/YOUR_PROJECT/luxe/luxe-copilot-api:latest
+  -t REGION-docker.pkg.dev/YOUR_PROJECT/Luxe/luxe-copilot-api:latest .
+docker push REGION-docker.pkg.dev/YOUR_PROJECT/Luxe/luxe-copilot-api:latest
 ```
 
 ## After deployment

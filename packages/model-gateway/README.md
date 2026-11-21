@@ -1,6 +1,6 @@
 # @luxe/model-gateway
 
-Provider-agnostic completion gateway for the luxe platform. Consumers code against a single
+Provider-agnostic completion gateway for the Luxe platform. Consumers code against a single
 `ModelProvider` interface while this package maps requests onto the concrete vendor protocol,
 keeping prompt assembly and provider selection out of application code.
 

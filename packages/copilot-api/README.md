@@ -1,6 +1,6 @@
 # @luxe/copilot-api
 
-Advisor-facing backend for the luxe platform (Cloud Run target). It stores
+Advisor-facing backend for the Luxe platform (Cloud Run target). It stores
 brand-side client records and interaction history, drafts client
 communications with an LLM through `@luxe/model-gateway`, and enforces the
 platform's approval-first policy: **no message is ever final without explicit

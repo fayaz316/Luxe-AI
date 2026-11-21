@@ -171,6 +171,9 @@ export default function App(): ReactNode {
     try {
       const roster = await listClients();
       setClients(roster);
+      if (roster.length > 0) {
+        setSelectedId((current) => current ?? roster[0]!.id);
+      }
       const fetched = await Promise.all(
         roster.map(async (client): Promise<[string, ClientDetail | null]> => {
           try {
@@ -384,7 +387,7 @@ export default function App(): ReactNode {
     const busy = decision !== null;
     detailNode = (
       <div className="detail-inner">
-        <div className="detail-scroll">
+        <div className="dossier-pane">
           <header className="client-header">
             <div>
               <p className="client-kicker">Guest since {formatMonthYear(client.createdAt)}</p>
@@ -469,10 +472,10 @@ export default function App(): ReactNode {
               </section>
             </>
           )}
+        </div>
 
-          <hr className="section-rule" />
-
-          <section aria-label="Interaction timeline">
+        <div className="correspondence-pane">
+          <section className="correspondence-scroll" aria-label="Interaction timeline">
             <h2 className="panel-title">Correspondence</h2>
             {timeline.length === 0 ? (
               <p className="quiet">No correspondence yet.</p>
@@ -504,9 +507,8 @@ export default function App(): ReactNode {
               </ol>
             )}
           </section>
-        </div>
 
-        <section className="composer" aria-label="Reply composer">
+          <section className="composer" aria-label="Reply composer">
           <div className="composer-head">
             <h2 className="composer-title">The house replies</h2>
             <span className="gate-note">Nothing reaches a guest without your approval.</span>
@@ -671,6 +673,7 @@ export default function App(): ReactNode {
             </div>
           )}
         </section>
+        </div>
       </div>
     );
   }

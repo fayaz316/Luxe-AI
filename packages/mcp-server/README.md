@@ -1,6 +1,6 @@
 # @luxe/mcp-server
 
-MCP server exposing the luxe copilot advisor tools over the copilot API.
+MCP server exposing the Luxe copilot advisor tools over the copilot API.
 Intended for MCP-compatible clients used by brand teams; every tool routes
 through the copilot API, so the approval-first policy applies unchanged —
 `approve_draft` is the human approval gate.

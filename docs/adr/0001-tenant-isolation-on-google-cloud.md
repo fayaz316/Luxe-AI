@@ -9,7 +9,7 @@ Luxury brands treat client data as a regulated asset. Procurement and compliance
 
 ## Decision
 
-Every luxe deployment targets the brand's own Google Cloud project. `infra/terraform` provisions that project per brand: Firestore, Cloud Run, Firebase Hosting, Secret Manager, and least-privilege IAM. The project ships no multi-tenant SaaS and no central control plane capable of reading tenant data.
+Every Luxe deployment targets the brand's own Google Cloud project. `infra/terraform` provisions that project per brand: Firestore, Cloud Run, Firebase Hosting, Secret Manager, and least-privilege IAM. The project ships no multi-tenant SaaS and no central control plane capable of reading tenant data.
 
 ## Consequences
 

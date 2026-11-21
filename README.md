@@ -1,4 +1,4 @@
-# luxe
+# Luxe
 
 Open-source client intelligence and advisor enablement platform for the luxury industry.
 
@@ -8,7 +8,7 @@ Open-source client intelligence and advisor enablement platform for the luxury i
 
 ## Positioning
 
-luxe brings luxury houses what no legacy tool or generic AI platform offers: the advisor's desk with complete client memory, AI-drafted correspondence in the house's voice, and request coordination across the whole ecosystem — the hotel, the boutique, the gallery, the marina, the theatre — on one ledger, confirmed by a human hand. Every outbound message passes an explicit approval gate. Client memory belongs to the client; brand data belongs to the brand.
+Luxe brings luxury houses what no legacy tool or generic AI platform offers: the advisor's desk with complete client memory, AI-drafted correspondence in the house's voice, and request coordination across the whole ecosystem — the hotel, the boutique, the gallery, the marina, the theatre — on one ledger, confirmed by a human hand. Every outbound message passes an explicit approval gate. Client memory belongs to the client; brand data belongs to the brand.
 
 ## What each audience gets
 
@@ -20,11 +20,13 @@ luxe brings luxury houses what no legacy tool or generic AI platform offers: the
 
 ## The desk
 
-The advisor workspace (fictional demonstration data — see [docs/DEMO.md](docs/DEMO.md)):
+Luxury advisors usually piece together guest preferences, scattered WhatsApp threads, and separate calls to the hotel, chauffeur, and theatre whenever a guest's plans change. Luxe brings the entire picture into one workspace (shown below with fictional Maison Verre data — see [docs/DEMO.md](docs/DEMO.md)):
+
+- **Guest dossier & Request Ledger** — On the left, the guest roster; in the center, client memory (preferred brands, sizes, interests, allergies) paired with a live **Request Ledger** that turns a single flight delay (*"Vol retardé — she lands at 00:10 instead of 21:20"*) into coordinated, per-step confirmations across the house, transport, and theatre; on the right, the full correspondence timeline.
 
 ![The guest desk: memory, the request ledger with the Paris-tonight cascade, and correspondence](docs/screenshots/desk.png)
 
-A draft awaits the advisor's hand — editable, and nothing sends without explicit approval:
+- **Mandatory human approval gate** — The model drafts replies in the house's voice using the guest's memory and recent context, but **nothing ever reaches a guest automatically**. Every reply pauses under *Awaiting your hand*, where the advisor can edit the copy, regenerate, reject, or explicitly approve & send.
 
 ![A prepared draft under the approval gate](docs/screenshots/approval.png)
 
@@ -109,7 +111,7 @@ The project is governed by five commitments — [CHARTER.md](CHARTER.md):
 
 ## Deployment
 
-Each brand deploys luxe into its own Google Cloud project. Instructions: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). In production, combine the optional API key (`COPILOT_API_KEY`) with Cloud Run invoker IAM; neither alone is sufficient defense.
+Each brand deploys Luxe into its own Google Cloud project. Instructions: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). In production, combine the optional API key (`COPILOT_API_KEY`) with Cloud Run invoker IAM; neither alone is sufficient defense.
 
 ## Roadmap
 
@@ -117,4 +119,4 @@ Milestones are version-ordered and carry no dates: [ROADMAP.md](ROADMAP.md).
 
 ## License
 
-Apache-2.0. Copyright 2026 luxe contributors.
+Apache-2.0. Copyright 2026 Luxe contributors.

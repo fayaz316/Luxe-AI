@@ -20,7 +20,7 @@ createRoot(container).render(
 );
 
 window.addEventListener('load', () => {
-  if (!('serviceWorker' in navigator)) return;
+  if (!import.meta.env.PROD || !('serviceWorker' in navigator)) return;
   navigator.serviceWorker.register('/sw.js').catch(() => {
     // Offline support is an enhancement; registration failures are non-fatal.
   });
