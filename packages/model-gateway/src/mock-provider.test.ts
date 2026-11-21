@@ -36,4 +36,31 @@ describe('MockProvider', () => {
     await provider.complete(request);
     expect(provider.lastRequest).toEqual(request);
   });
+
+  it('returns the first matching scenario script', async () => {
+    const provider = new MockProvider('FALLBACK', [
+      { match: 'dockside', reply: 'CHECKLIST REPLY' },
+      { match: 'vegetarian', reply: 'COUNTER REPLY' },
+    ]);
+    const checklist = await provider.complete({
+      system: 's',
+      messages: [{ role: 'user', content: 'Regatta Saturday: berth, dinner 8, two cars dockside.' }],
+    });
+    expect(checklist.text).toBe('CHECKLIST REPLY');
+
+    const counter = await provider.complete({
+      system: 's',
+      messages: [{ role: 'user', content: 'Friday, quiet table, guest vegetarian.' }],
+    });
+    expect(counter.text).toBe('COUNTER REPLY');
+  });
+
+  it('falls back when no scenario script matches', async () => {
+    const provider = new MockProvider('FALLBACK', [{ match: /00:10/, reply: 'MATCHED' }]);
+    const result = await provider.complete({
+      system: 's',
+      messages: [{ role: 'user', content: 'unrelated request' }],
+    });
+    expect(result.text).toBe('FALLBACK');
+  });
 });

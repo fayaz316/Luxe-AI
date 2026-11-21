@@ -3,6 +3,7 @@ import { MockProvider } from '@luxe/model-gateway';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { FastifyInstance } from 'fastify';
 import { MemoryStore } from './store.js';
+import { seedDemoData } from './seed.js';
 import { buildServer } from './service.js';
 import type { Client, Draft, Interaction } from './types.js';
 
@@ -336,5 +337,53 @@ describe('copilot-api with an API key', () => {
   it('enforces the key on the approval endpoints', async () => {
     const unauthenticated = await app.inject({ method: 'POST', url: '/drafts/any/approve', payload: {} });
     expect(unauthenticated.statusCode).toBe(401);
+  });
+});
+
+describe('copilot-api demo mode', () => {
+  it('is absent outside demo mode', async () => {
+    const app = buildServer({ store: new MemoryStore(), provider: new MockProvider() });
+    const res = await app.inject({ method: 'POST', url: '/dev/demo/burst' });
+    expect(res.statusCode).toBe(404);
+    await app.close();
+  });
+
+  it('prepares one pending draft per scenario, in the client language', async () => {
+    const store = new MemoryStore();
+    await seedDemoData(store);
+    const app = buildServer({ store, provider: new MockProvider(), demoMode: true });
+
+    const res = await app.inject({ method: 'POST', url: '/dev/demo/burst' });
+    expect(res.statusCode).toBe(200);
+
+    const body = res.json() as { prepared: number; drafts: Draft[] };
+    expect(body.prepared).toBe(3);
+    expect(body.drafts.every((draft) => draft.status === 'pending_approval')).toBe(true);
+
+    // Each scenario reply is distinct and matches its client's language.
+    const replies = body.drafts.map((draft) => draft.text);
+    expect(replies.some((text) => text.includes('Avec plaisir'))).toBe(true);
+    expect(replies.some((text) => text.includes('かしこまりました'))).toBe(true);
+    expect(replies.some((text) => text.includes('With pleasure'))).toBe(true);
+
+    // Every scenario client gained exactly one inbound interaction.
+    for (const draft of body.drafts) {
+      const detail = await app.inject({ method: 'GET', url: `/clients/${draft.clientId}` });
+      const { interactions } = detail.json() as { interactions: Interaction[] };
+      const inbound = interactions.filter((item) => item.direction === 'inbound');
+      expect(inbound.length).toBeGreaterThanOrEqual(1);
+    }
+
+    // Approval still gates: a burst draft approves through the normal path.
+    const first = body.drafts[0] as Draft;
+    const approved = await app.inject({
+      method: 'POST',
+      url: `/drafts/${first.id}/approve`,
+      payload: {},
+    });
+    expect(approved.statusCode).toBe(200);
+    expect((approved.json() as Draft).status).toBe('approved');
+
+    await app.close();
   });
 });

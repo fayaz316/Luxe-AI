@@ -9,7 +9,7 @@ export { ProviderError } from './provider-error.js';
 export { buildGeminiRequestBody, extractGeminiText } from './gemini-protocol.js';
 export type { GeminiContent, GeminiGenerateContentBody, GeminiPart } from './gemini-protocol.js';
 export { GeminiApiKeyProvider } from './gemini-api-key.js';
-export { MockProvider, DEFAULT_MOCK_REPLY } from './mock-provider.js';
+export { MockProvider, DEFAULT_MOCK_REPLY, type MockScript } from './mock-provider.js';
 export { VertexGeminiProvider } from './vertex.js';
 export type { GoogleAuthLike, VertexGeminiOptions } from './vertex.js';
 

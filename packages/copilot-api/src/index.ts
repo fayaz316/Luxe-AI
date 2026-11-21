@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { resolveProvider } from '@luxe/model-gateway';
 import { pathToFileURL } from 'node:url';
+import { buildDemoProvider } from './demo.js';
 import { seedDemoData } from './seed.js';
 import { buildServer, SERVICE_NAME } from './service.js';
 import { FirestoreStore, MemoryStore, type FirestoreLike, type Store } from './store.js';
@@ -36,13 +37,19 @@ async function resolveStore(): Promise<Store> {
 
 async function main(): Promise<void> {
   const store = await resolveStore();
-  const provider = resolveProvider(process.env);
-  if (process.env.SEED_DEMO === '1') {
+  const demoMode = process.env.SEED_DEMO === '1';
+  const hasConfiguredProvider = Boolean(
+    process.env.GEMINI_API_KEY || process.env.GOOGLE_PROJECT || process.env.GOOGLE_PROJECT_ID,
+  );
+  const provider =
+    demoMode && !hasConfiguredProvider ? buildDemoProvider() : resolveProvider(process.env);
+  if (demoMode) {
     await seedDemoData(store);
   }
   const app = buildServer({
     store,
     provider,
+    demoMode,
     ...(process.env.COPILOT_API_KEY ? { apiKey: process.env.COPILOT_API_KEY } : {}),
   });
   const port = Number(process.env.PORT ?? 8080);

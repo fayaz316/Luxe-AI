@@ -394,7 +394,7 @@ export default function App(): ReactNode {
                 {pendingDrafts.map((pending) => (
                   <li key={pending.id}>
                     <span>
-                      {channelLabel(pending.channel)} · {formatDate(pending.createdAt)}
+                      {pending.intentHint ?? `${channelLabel(pending.channel)} · ${formatDate(pending.createdAt)}`}
                     </span>
                     <button
                       type="button"

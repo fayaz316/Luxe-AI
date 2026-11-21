@@ -5,6 +5,7 @@ import type { ModelProvider } from '@luxe/model-gateway';
 import Fastify, { type FastifyInstance } from 'fastify';
 import type { Store } from './store.js';
 import type { Client, Draft, Interaction, InteractionChannel } from './types.js';
+import { runDemoBurst } from './demo.js';
 
 export const SERVICE_NAME = 'copilot-api';
 export const SERVICE_VERSION = '0.1.0';
@@ -12,6 +13,11 @@ export const SERVICE_VERSION = '0.1.0';
 export interface BuildServerOptions {
   store: Store;
   provider: ModelProvider;
+  /**
+   * Registers the demonstration-only routes (SEED_DEMO deployments). These
+   * operate exclusively on the fictional seeded client base.
+   */
+  demoMode?: boolean;
   /**
    * Optional shared secret. When set, every request must carry it in the
    * `x-api-key` header, except the health check and the WhatsApp webhook
@@ -365,6 +371,13 @@ export function buildServer(options: BuildServerOptions): FastifyInstance {
     // (approval-first policy).
     return { received: true };
   });
+
+  if (options.demoMode === true) {
+    app.post('/dev/demo/burst', async () => {
+      const drafts = await runDemoBurst(store);
+      return { prepared: drafts.length, drafts };
+    });
+  }
 
   return app;
 }
