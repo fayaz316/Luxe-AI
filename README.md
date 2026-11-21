@@ -8,7 +8,7 @@ Open-source client intelligence and advisor enablement platform for the luxury i
 
 ## Positioning
 
-Every luxury house holds a fragment of the client: the hotel holds the stay history, the maison holds the collection, the restaurant holds the table preferences. Horizontal AI platforms resolve this by reading everything and steering clients to the highest bidder. luxe takes the opposite position: client memory belongs to the client, and brand data belongs to the brand. Advisors gain complete client memory, drafted communications in a professional tone, and a hard approval gate — no outbound message exists without explicit advisor approval.
+luxe brings luxury houses what no legacy tool or generic AI platform offers: the advisor's desk with complete client memory, AI-drafted correspondence in the house's voice, and request coordination across the whole ecosystem — the hotel, the boutique, the gallery, the marina, the theatre — on one ledger, confirmed by a human hand. Every outbound message passes an explicit approval gate. Client memory belongs to the client; brand data belongs to the brand.
 
 ## What each audience gets
 
@@ -90,7 +90,7 @@ The demo seeds a fictional hotel and dining client base, "Maison Verre". All dem
 | Path | Purpose |
 | --- | --- |
 | `apps/copilot-web` | Advisor workspace (browser PWA) |
-| `packages/copilot-api` | Advisor API: client memory, drafting, approval gate, WhatsApp webhook |
+| `packages/copilot-api` | Advisor API: client memory, drafting, request ledger, approval gate, WhatsApp webhook |
 | `packages/model-gateway` | `ModelProvider` abstraction: Gemini API key, Vertex AI, deterministic mock |
 | `packages/vault-sdk` | Client-held envelope encryption for vault records |
 | `packages/mcp-server` | MCP server exposing advisor tools over the copilot API |

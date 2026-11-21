@@ -59,6 +59,10 @@ The vault holds four record kinds: preferences, sizing, collection, and interact
 
 See [adr/0002-client-vault-ciphertext-only.md](adr/0002-client-vault-ciphertext-only.md).
 
+## Request ledger
+
+A request (`ClientRequest`) decomposes one guest need into steps (`RequestStep`) across the house and its partners — boutique, gallery, marina, transport, theatre. Steps are inert until the advisor confirms them (`POST /requests/:id/steps/:stepId/approve`); a guest-facing step records its outbound communication at confirmation, under the same gate as drafted replies. See [adr/0005-request-ledger.md](adr/0005-request-ledger.md).
+
 ## MCP surface
 
 `packages/mcp-server` exposes three advisor tools over the copilot API (`COPILOT_API_URL`): client lookup, draft, and approve/reject. MCP clients exercise the same API paths as the web workspace; the approval gate is enforced server-side and cannot be bypassed from the client side.
