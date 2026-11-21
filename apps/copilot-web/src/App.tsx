@@ -53,15 +53,7 @@ function latestInteraction(detail: ClientDetail | undefined): Interaction | unde
 
 function TagList({ values, empty }: { values: string[]; empty: string }): ReactNode {
   if (values.length === 0) return <p className="quiet">{empty}</p>;
-  return (
-    <ul className="tag-list">
-      {values.map((value) => (
-        <li key={value} className="tag">
-          {value}
-        </li>
-      ))}
-    </ul>
-  );
+  return <p className="inline-list">{values.join(' · ')}</p>;
 }
 
 function SizesTable({ sizes }: { sizes: Record<string, string> }): ReactNode {
@@ -81,16 +73,32 @@ function SizesTable({ sizes }: { sizes: Record<string, string> }): ReactNode {
   );
 }
 
+function guestInitials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  const first = parts[0] ?? '';
+  const last = parts.length > 1 ? parts[parts.length - 1] ?? '' : '';
+  return (first.charAt(0) + last.charAt(0)).toUpperCase();
+}
+
+/** Deterministic mineral tone per guest, so the list feels inhabited. */
+const AVATAR_TONES = ['clay', 'sage', 'sand', 'slate'] as const;
+
+function avatarTone(name: string): string {
+  let hash = 0;
+  for (const char of name) hash = (hash * 31 + char.charCodeAt(0)) % 997;
+  return AVATAR_TONES[hash % AVATAR_TONES.length] ?? 'sand';
+}
+
 function EmptyState(): ReactNode {
   return (
     <div className="empty-state">
       <span className="monogram" aria-hidden="true">
         L
       </span>
-      <h2 className="empty-title">Select a client</h2>
+      <h2 className="empty-title">Select a guest</h2>
       <p className="empty-copy">
-        Choose a client from the list to review their memory and prepare a reply. Every draft waits
-        for your explicit approval before anything is sent.
+        Choose a guest to review their memory and prepare the house’s reply. Every draft waits for
+        your hand.
       </p>
     </div>
   );
@@ -304,13 +312,18 @@ export default function App(): ReactNode {
         <div className="detail-scroll">
           <header className="client-header">
             <div>
+              <p className="client-kicker">Guest</p>
               <h1 className="client-title">{client.displayName}</h1>
-              <div className="chip-row">
-                <span className="chip">{client.language}</span>
-                {client.timezone !== undefined && <span className="chip">{client.timezone}</span>}
-                {client.email !== undefined && <span className="chip">{client.email}</span>}
-                {client.phone !== undefined && <span className="chip">{client.phone}</span>}
-              </div>
+              <p className="meta-line">
+                {[
+                  client.language,
+                  client.timezone,
+                  client.email,
+                  client.phone,
+                ]
+                  .filter((part): part is string => part !== undefined)
+                  .join('  ·  ')}
+              </p>
             </div>
             {detailLoading && (
               <span className="refreshing" aria-live="polite">
@@ -323,9 +336,9 @@ export default function App(): ReactNode {
             <blockquote className="notes">{client.notes}</blockquote>
           )}
 
-          <section className="panel taste" aria-label="Taste memory">
-            <h2 className="eyebrow panel-title">Taste memory</h2>
-            <div className="taste-grid">
+          <section aria-label="Taste memory">
+            <h2 className="panel-title">Memory</h2>
+            <div className="memory">
               <div>
                 <h3 className="mini-label">Preferred brands</h3>
                 <TagList values={client.taste.preferredBrands} empty="No brands recorded yet." />
@@ -341,34 +354,34 @@ export default function App(): ReactNode {
             </div>
           </section>
 
-          <section className="panel timeline-panel" aria-label="Interaction timeline">
-            <h2 className="eyebrow panel-title">Timeline</h2>
+          <hr className="section-rule" />
+
+          <section aria-label="Interaction timeline">
+            <h2 className="panel-title">Correspondence</h2>
             {timeline.length === 0 ? (
               <p className="quiet">No interactions recorded yet.</p>
             ) : (
               <ol className="timeline">
                 {timeline.map((item) => (
                   <li key={item.id} className={`timeline-item ${item.direction}`}>
+                    <time className="timeline-when" dateTime={item.at}>
+                      {formatDate(item.at)}
+                    </time>
                     <span
-                      className={item.direction === 'outbound' ? 'dir-badge dir-outbound' : 'dir-badge'}
+                      className={item.direction === 'outbound' ? 'dir-dot dir-outbound' : 'dir-dot'}
                       aria-hidden="true"
-                    >
-                      {item.direction === 'outbound' ? '⟶' : '⟵'}
-                    </span>
+                    />
                     <div className="timeline-body">
-                      <div className="timeline-top">
+                      <p className="timeline-over">
                         <span className="channel-label">{item.channel}</span>
                         <span className="dir-word">
-                          {item.direction === 'outbound' ? 'Outbound' : 'Inbound'}
+                          {item.direction === 'outbound' ? 'the house' : 'the guest'}
                         </span>
-                        <time className="timeline-date" dateTime={item.at}>
-                          {formatDate(item.at)}
-                        </time>
-                      </div>
+                        {item.advisorId !== undefined && (
+                          <span className="advisor-note"> · {item.advisorId}</span>
+                        )}
+                      </p>
                       <p className="timeline-summary">{item.summary}</p>
-                      {item.advisorId !== undefined && (
-                        <p className="advisor-note">Handled by advisor {item.advisorId}</p>
-                      )}
                     </div>
                   </li>
                 ))}
@@ -379,16 +392,17 @@ export default function App(): ReactNode {
 
         <section className="composer" aria-label="Reply composer">
           <div className="composer-head">
-            <h2 className="eyebrow panel-title">Draft a reply</h2>
-            <span className="gate-note">Advisor review required — nothing is sent until you approve.</span>
+            <h2 className="composer-title">The house replies</h2>
+            <span className="gate-note">Nothing reaches a guest without your approval.</span>
           </div>
 
           {pendingDrafts.length > 0 && (
             <div className="pending-drafts">
-              <p className="mini-label">
+              <p className="pending-title">
+                <span className="pending-dot" aria-hidden="true" />
                 {pendingDrafts.length === 1
-                  ? '1 draft awaiting your approval'
-                  : `${pendingDrafts.length} drafts awaiting your approval`}
+                  ? 'Awaiting your hand'
+                  : `${pendingDrafts.length} awaiting your hand`}
               </p>
               <ul>
                 {pendingDrafts.map((pending) => (
@@ -462,8 +476,8 @@ export default function App(): ReactNode {
           {draft !== null && (
             <div className="draft-editor">
               <div className="draft-editor-head">
-                <span className="eyebrow eyebrow-gold">Advisor review required</span>
-                <span className="mini-label">
+                <span className="awaiting-mark">Awaiting your hand</span>
+                <span className="draft-meta">
                   {channelLabel(draft.channel)} · drafted {formatDate(draft.createdAt)}
                 </span>
               </div>
@@ -512,8 +526,8 @@ export default function App(): ReactNode {
                 </button>
               </div>
               <p className="gate-note">
-                Approving sends this message to {client.displayName} via {channelLabel(draft.channel)}.
-                Rejecting discards it — nothing is ever sent without your approval.
+                Approving sends this to {client.displayName} via {channelLabel(draft.channel)}.
+                Rejecting discards it — nothing is ever sent without your hand.
               </p>
             </div>
           )}
@@ -542,26 +556,25 @@ export default function App(): ReactNode {
   return (
     <div className="app">
       <header className="topbar">
-        <span className="wordmark">Luxe Copilot</span>
-        <span className="approval-pill">
-          <span className="approval-pill-dot" aria-hidden="true" />
-          Human approval required for every send
+        <span className="wordmark">
+          <em>Luxe</em> Copilot
+        </span>
+        <span className="topbar-pledge">
+          <span className="pledge-dot" aria-hidden="true" />
+          Every send requires your hand
         </span>
       </header>
-      <p className="policy-banner" role="note">
-        No message reaches a client without advisor approval.
-      </p>
       <main className="workspace">
         <aside className="sidebar" aria-label="Client list">
           <div className="sidebar-head">
-            <label className="eyebrow sidebar-title" htmlFor="client-search">
-              Clients
+            <label className="sidebar-title" htmlFor="client-search">
+              Guests
             </label>
             <input
               id="client-search"
               className="search"
               type="search"
-              placeholder="Search clients…"
+              placeholder="Search guests…"
               value={search}
               onChange={(event: ChangeEvent<HTMLInputElement>) => {
                 setSearch(event.target.value);
@@ -600,10 +613,18 @@ export default function App(): ReactNode {
                         setSelectedId(client.id);
                       }}
                     >
-                      <span className="client-name">{client.displayName}</span>
-                      <span className="client-meta">
-                        <span className="tag tag-lang">{client.language}</span>
-                        {last !== undefined && <span className="client-snippet">{last.summary}</span>}
+                      <span className={`avatar avatar-${avatarTone(client.displayName)}`} aria-hidden="true">
+                        {guestInitials(client.displayName)}
+                      </span>
+                      <span className="client-text">
+                        <span className="client-name">{client.displayName}</span>
+                        <span className="client-meta">
+                          {last !== undefined ? (
+                            <span className="client-snippet">{last.summary}</span>
+                          ) : (
+                            <span className="client-snippet">No correspondence yet</span>
+                          )}
+                        </span>
                       </span>
                     </button>
                   </li>

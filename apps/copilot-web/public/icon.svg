@@ -1,11 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Luxe monogram">
-  <rect width="512" height="512" rx="112" fill="#111827" />
+  <rect width="512" height="512" rx="96" fill="#201C18" />
   <text
     x="256"
-    y="356"
-    font-family="-apple-system, 'Segoe UI', Inter, sans-serif"
+    y="352"
+    font-family="Georgia, 'Fraunces', serif"
+    font-style="italic"
     font-size="300"
-    font-weight="600"
-    fill="#FFFFFF"
+    fill="#FAF8F4"
     text-anchor="middle">L</text>
+  <circle cx="368" cy="352" r="18" fill="#A98858" />
 </svg>
